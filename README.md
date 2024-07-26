@@ -1,7 +1,7 @@
-# ATS Optimizer
+# Smart Resume Analyzer
 
 ## Overview
-The ATS Optimizer is a web application designed to enhance the recruitment process using machine learning and artificial intelligence. It allows users to upload resumes and input job descriptions to identify the most relevant resumes based on their similarity to the job description. The system leverages TF-IDF and cosine similarity techniques for precise matching and includes an interactive chatbot that provides personalized suggestions for resume improvement by extracting and analyzing key terms from job descriptions
+The Smart Resume Analyzer is a web application designed to enhance the recruitment process using machine learning and artificial intelligence. It allows users to upload resumes and input job descriptions to identify the most relevant resumes based on their similarity to the job description. The system leverages TF-IDF and cosine similarity techniques for precise matching and includes an interactive chatbot that provides personalized suggestions for resume improvement by extracting and analyzing key terms from job descriptions
 
 ## Technologies Used
 - **Frontend:** HTML, CSS, Bootstrap
