@@ -69,25 +69,26 @@ def matcher():
         if not job_description or not resume_files:
             return render_template('atstracker.html', message="Please Upload Resume and Job Description")
         
-        resumes = []
+        # Text extraction and similarity calculation
+        resumes_text = []
         for resume_file in resume_files:
             if resume_file and allowed_file(resume_file.filename):
                 filename = os.path.join(app.config['UPLOAD_FOLDER'], resume_file.filename)
                 try:
                     resume_file.save(filename)
-                    resumes.append(extract_text(filename))
+                    resumes_text.append(extract_text(filename))
                 except Exception as e:
                     return render_template('atstracker.html', message=f"Error saving or processing file: {e}")
             else:
                 return render_template('atstracker.html', message="Unsupported file type.")
         
-        vectorizer = TfidfVectorizer(stop_words='english').fit_transform([job_description] + resumes)
-        vectors = vectorizer.toarray()
+        # Vectorizing and calculating cosine similarity
+        vectorizer = TfidfVectorizer(stop_words='english')
+        job_vector = vectorizer.fit_transform([job_description])
+        resume_vectors = vectorizer.transform(resumes_text)
+        similarities = cosine_similarity(job_vector, resume_vectors).flatten()
         
-        job_vector = vectors[0]
-        resume_vectors = vectors[1:]
-        similarities = cosine_similarity([job_vector], resume_vectors)[0]
-        
+        # Sort by top similarities
         top_indices = similarities.argsort()[-3:][::-1]
         top_resumes = [resume_files[i].filename for i in top_indices]
         similarity_scores = [round(similarities[i] * 100, 2) for i in top_indices]
@@ -106,11 +107,18 @@ def chat():
     return jsonify({"response": response})
 
 def generate_chatbot_response(user_input):
-    example_job_description = """
-    We are looking for a software engineer with experience in Python, Java, and cloud technologies.
-    The ideal candidate should have strong problem-solving skills, knowledge of machine learning, and familiarity with DevOps practices.
-    """
-    if "improve" in user_input.lower():
+    # Check if the input seems like a job description
+    if "job description:" in user_input.lower():
+        # Extract keywords from the provided job description
+        job_description = user_input.split("job description:", 1)[1].strip()
+        keywords = extract_keywords(job_description)
+        return f"Based on the provided job description, consider including these keywords: {', '.join(keywords)}."
+    elif "improve" in user_input.lower():
+        # Provide guidance on resume improvement
+        example_job_description = """
+        We are looking for a software engineer with experience in Python, Java, and cloud technologies.
+        The ideal candidate should have strong problem-solving skills, knowledge of machine learning, and familiarity with DevOps practices.
+        """
         keywords = extract_keywords(example_job_description)
         return f"To improve your resume, make sure to highlight relevant skills and experiences. Consider including these keywords: {', '.join(keywords)}."
     elif "tailor" in user_input.lower():
